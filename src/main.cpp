@@ -45,7 +45,22 @@ void drawPlayback(String title, int songProgress, int playstate);
 
 void setup() {
     Serial.begin(115200);
-    connect_to_wifi();
+
+    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+    if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
+        Serial.println(F("SSD1306 allocation failed"));
+        for(;;); // Don't proceed, loop forever
+    } else {
+        // display.clearDisplay();
+        // display.setCursor(0, 20);
+        // display.setTextColor(WHITE);
+        // display.print("Hello World");
+        // display.display();
+    }
+
+    drawPlayback("FCK AFD", 50, 1);
+
+    // connect_to_wifi(); // Skipping till this shit is finished
 
     if (hasRefreshToken()) {
         String token = load_sp_refresh_token();
@@ -58,11 +73,6 @@ void setup() {
         }
     }
 
-    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-    if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
-        Serial.println(F("SSD1306 allocation failed"));
-        for(;;); // Don't proceed, loop forever
-    }
 
     sp->begin();
     while (!sp->is_auth()) {
@@ -75,7 +85,7 @@ void setup() {
 
 
 void loop() {
-    drawPlayback("FCK AFD", 50, 1);
+    // drawPlayback("FCK AFD", 50, 1);
 }
 
 void connect_to_wifi() {
@@ -113,15 +123,17 @@ void drawPlayback(String title, int songProgress, int playstate) {
     display.setFont(&FreeSansBold9pt7b);
     display.setCursor(7, 14);
     display.print(title);
-    display.startscrolldiagright(6, 121);
-    display.fillCircle(63, 48, 8, 1); 
+    // display.startscrolldiagright(6, 121);
+    display.fillCircle(63, 48, 8, 1);
     if (playstate == 1) {
-        display.fillTriangle(110, 18, 110, 28, 120, 23, BLACK);
-    } else {
         display.fillRect(110, 18, 10, 10, BLACK);
+    } else {
+        display.fillTriangle(110, 18, 110, 28, 120, 23, BLACK);
     }
 
     display.drawRoundRect(13, 59, 100, 5, 5, WHITE);
     display.fillRoundRect(13, 59, songProgress, 5, 5, WHITE);
+
+    display.display();
 
 }
