@@ -41,7 +41,12 @@ void connect_to_wifi();
 void save_sp_refresh_token();
 String load_sp_refresh_token();
 bool hasRefreshToken();
+
+float offset;
+int offsetstarttimer;
+int offsetlenght;
 void drawPlayback(String title, int songProgress, int playstate);
+void changeoffset(bool songtitlechange, String title);
 
 void setup() {
     Serial.begin(115200);
@@ -58,34 +63,35 @@ void setup() {
         // display.display();
     }
 
-    drawPlayback("FCK AFD", 50, 1);
-
     // connect_to_wifi(); // Skipping till this shit is finished
 
-    if (hasRefreshToken()) {
-        String token = load_sp_refresh_token();
-        sp = new Spotify(CLIENT_ID, CLIENT_SECRET, token.c_str());
-    } else {
-        sp = new Spotify(CLIENT_ID, CLIENT_SECRET);
-        sp->begin();
-        while (!sp->is_auth()) {
-            sp->handle_client();
-        }
-    }
+    // if (hasRefreshToken()) {
+    //     String token = load_sp_refresh_token();
+    //     sp = new Spotify(CLIENT_ID, CLIENT_SECRET, token.c_str());
+    // } else {
+    //     sp = new Spotify(CLIENT_ID, CLIENT_SECRET);
+    //     sp->begin();
+    //     while (!sp->is_auth()) {
+    //         sp->handle_client();
+    //     }
+    // }
 
 
-    sp->begin();
-    while (!sp->is_auth()) {
-        sp->handle_client(); // Required for receiving the authorization code
-    }
+    // sp->begin();
+    // while (!sp->is_auth()) {
+    //     sp->handle_client(); // Required for receiving the authorization code
+    // }
 
-    save_sp_refresh_token();
-    Serial.printf("Authenticated! Refresh token: %s\n", sp->get_user_tokens().refresh_token);
+    // save_sp_refresh_token();
+    // Serial.printf("Authenticated! Refresh token: %s\n", sp->get_user_tokens().refresh_token);
+
+    changeoffset(true, "Gimme Gimme Gimme (A men after midnight)");
 }
 
 
 void loop() {
-    // drawPlayback("FCK AFD", 50, 1);
+    drawPlayback("Gimme Gimme Gimme (A men after midnight)", 50, 1);
+    changeoffset(false, "");
 }
 
 void connect_to_wifi() {
@@ -117,11 +123,35 @@ bool hasRefreshToken() {
 
 // Going to build all the graphic shit here...
 
+void changeoffset(bool songtitlechange = false, String title = "") {
+    float changerate = 1; //I think this is gonna be how fast it's going to move 
+    int waittill = 300; //Ticks till it starts moving
+    if (songtitlechange) {
+        offset = 0;
+        offsetstarttimer = 0;
+        int16_t x1, y1;
+        uint16_t textWidth, textHeight;
+        display.getTextBounds(title, 0, 14, &x1, &y1, &textWidth, &textHeight);
+        offsetlenght = textWidth;
+    }
+
+    if (offsetstarttimer < waittill) {
+        waittill + 1;
+    } else if (offset < offsetlenght) {
+        offset += changerate;
+    } else {
+        offset = 0;
+        offsetstarttimer = 0;
+    }
+    
+}
+
 void drawPlayback(String title, int songProgress, int playstate) {
     display.clearDisplay();
     display.setTextSize(1);
     display.setFont(&FreeSansBold9pt7b);
-    display.setCursor(7, 14);
+    display.setCursor(7, 14 - offset);
+    display.setTextColor(WHITE);
     display.print(title);
     // display.startscrolldiagright(6, 121);
     display.fillCircle(63, 48, 8, 1);
