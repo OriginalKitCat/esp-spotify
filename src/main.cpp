@@ -45,6 +45,7 @@ bool hasRefreshToken();
 float offset;
 int offsetstarttimer;
 int offsetlenght;
+int lastScrollStep = 0;
 void drawPlayback(String title, int songProgress, int playstate);
 void changeoffset(bool songtitlechange, String title);
 
@@ -124,24 +125,32 @@ bool hasRefreshToken() {
 // Going to build all the graphic shit here...
 
 void changeoffset(bool songtitlechange = false, String title = "") {
-    float changerate = 1; //I think this is gonna be how fast it's going to move 
-    int waittill = 300; //Ticks till it starts moving
+    const unsigned int changerate = 1; //I think this is gonna be how fast it's going to move 
+    const unsigned int waittill = 300; //Ticks till it starts moving
+    const unsigned int scrollEvery = 30; //Delaay time in ms
+
     if (songtitlechange) {
         offset = 0;
         offsetstarttimer = 0;
+        int lastScrollStep = offsetstarttimer;
         int16_t x1, y1;
         uint16_t textWidth, textHeight;
         display.getTextBounds(title, 0, 14, &x1, &y1, &textWidth, &textHeight);
         offsetlenght = textWidth;
     }
+    unsigned long now = millis();
 
-    if (offsetstarttimer < waittill) {
-        waittill + 1;
-    } else if (offset < offsetlenght) {
-        offset += changerate;
-    } else {
-        offset = 0;
-        offsetstarttimer = 0;
+    if (now - offsetstarttimer < waittill)
+        return;
+    if (now - lastScrollStep >= scrollEvery) {
+        lastScrollStep = now;
+
+        if (offset < offsetlenght) {
+            offset++;
+        } else {
+            offset = 0;
+            offsetstarttimer = now; // pause before the title starts scrolling again
+        }
     }
     
 }
@@ -156,12 +165,13 @@ void drawPlayback(String title, int songProgress, int playstate) {
     // display.startscrolldiagright(6, 121);
     display.fillCircle(63, 48, 8, 1);
     if (playstate == 1) {
-        display.fillRect(110, 18, 10, 10, BLACK);
+        display.fillRect(63, 48, 4, 8, BLACK);
     } else {
         display.fillTriangle(110, 18, 110, 28, 120, 23, BLACK);
     }
 
     display.drawRoundRect(13, 59, 100, 5, 5, WHITE);
+
     display.fillRoundRect(13, 59, songProgress, 5, 5, WHITE);
 
     display.display();
