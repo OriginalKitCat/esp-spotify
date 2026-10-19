@@ -4,7 +4,10 @@
 #include <Adafruit_SSD1306.h>
 #include <SpotifyEsp32.h>
 #include <Preferences.h>
+
+//Fonts
 #include "FreeSansBold9pt7b.h"
+#include "TomThumb.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -46,7 +49,7 @@ float offset;
 int offsetstarttimer;
 int offsetlenght;
 int lastScrollStep = 0;
-void drawPlayback(String title, int songProgress, int playstate);
+void drawPlayback(String title, String author, String NextIn, float songProgress, float songLenght, int playstate);
 void changeoffset(bool songtitlechange, String title);
 
 void setup() {
@@ -91,7 +94,7 @@ void setup() {
 
 
 void loop() {
-    drawPlayback("Gimme Gimme Gimme (A men after midnight)", 50, 1);
+    drawPlayback("Gimme Gimme Gimme (A men after midnight)", "ABBA", "Beat it", 2.45, 3.12, 1);
     changeoffset(false, "");
 }
 
@@ -124,9 +127,32 @@ bool hasRefreshToken() {
 
 // Going to build all the graphic shit here...
 
+void readyForTitle() {
+    display.setTextSize(1);
+    display.setFont(&FreeSansBold9pt7b);
+    display.setCursor(-1 - offset, 12);
+    display.setTextColor(WHITE);
+    display.setTextWrap(false);
+}
+
+void readyForAuthor() {
+    display.setTextSize(1);
+    display.setFont(NULL);
+    display.setCursor(13, 21);
+    display.setTextColor(WHITE);
+    display.setTextWrap(false);
+} 
+
+void readyForTime() {
+    display.setTextSize(1);
+    display.setFont(&TomThumb);
+    display.setTextColor(WHITE);
+    display.setTextWrap(false);
+}
+
 void changeoffset(bool songtitlechange = false, String title = "") {
     const unsigned int changerate = 1; //I think this is gonna be how fast it's going to move 
-    const unsigned int waittill = 300; //Ticks till it starts moving
+    const unsigned int waittill = 3000; //Ticks till it starts moving
     const unsigned int scrollEvery = 30; //Delaay time in ms
 
     if (songtitlechange) {
@@ -135,6 +161,7 @@ void changeoffset(bool songtitlechange = false, String title = "") {
         int lastScrollStep = offsetstarttimer;
         int16_t x1, y1;
         uint16_t textWidth, textHeight;
+        readyForTitle();
         display.getTextBounds(title, 0, 14, &x1, &y1, &textWidth, &textHeight);
         offsetlenght = textWidth;
     }
@@ -144,36 +171,48 @@ void changeoffset(bool songtitlechange = false, String title = "") {
         return;
     if (now - lastScrollStep >= scrollEvery) {
         lastScrollStep = now;
-
         if (offset < offsetlenght) {
             offset++;
-        } else {
-            offset = 0;
+        } else if (offset == 0) {
             offsetstarttimer = now; // pause before the title starts scrolling again
+        } else {
+            offset = -128;
         }
     }
     
 }
 
-void drawPlayback(String title, int songProgress, int playstate) {
+void drawPlayback(String title, String author, String nextIn, float songProgress, float songLenght, int playstate) {
     display.clearDisplay();
-    display.setTextSize(1);
-    display.setFont(&FreeSansBold9pt7b);
-    display.setCursor(7, 14 - offset);
-    display.setTextColor(WHITE);
+    readyForTitle();
     display.print(title);
+    readyForAuthor();
+    display.print(author);
+    readyForTime();
+    display.setCursor(13, 35);
+    display.print("Next up:");
+    display.setCursor(43, 35);
+    display.print(nextIn);
     // display.startscrolldiagright(6, 121);
-    display.fillCircle(63, 48, 8, 1);
+    display.fillCircle(62, 48, 8, 1);
     if (playstate == 1) {
-        display.fillRect(63, 48, 4, 8, BLACK);
+        display.fillRect(58, 44, 3, 9, BLACK);
+        display.fillRect(64, 44, 3, 9, BLACK);
     } else {
         display.fillTriangle(110, 18, 110, 28, 120, 23, BLACK);
     }
 
+    //Progress Bar
     display.drawRoundRect(13, 59, 100, 5, 5, WHITE);
-
-    display.fillRoundRect(13, 59, songProgress, 5, 5, WHITE);
-
+    display.fillRoundRect(13, 59, songProgress / songLenght * 100, 5, 5, WHITE);
+    readyForTime();
+    display.setCursor(13, 57);
+    display.print(songProgress);
+    int16_t x1, y1;
+    uint16_t textWidth, textHeight;
+    display.getTextBounds(String(songLenght), 0, 14, &x1, &y1, &textWidth, &textHeight);
+    int songLenghtLenght = textWidth;
+    display.setCursor(118 - songLenghtLenght, 57);
+    display.print(songLenght);
     display.display();
-
 }
