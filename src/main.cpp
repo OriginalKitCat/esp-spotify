@@ -152,7 +152,7 @@ void readyForTime() {
 
 void changeoffset(bool songtitlechange = false, String title = "") {
     const unsigned int changerate = 1; //I think this is gonna be how fast it's going to move 
-    const unsigned int waittill = 3000; //Ticks till it starts moving
+    const unsigned int waittill = 7000; //Ticks till it starts moving
     const unsigned int scrollEvery = 30; //Delaay time in ms
 
     if (songtitlechange) {
@@ -173,10 +173,9 @@ void changeoffset(bool songtitlechange = false, String title = "") {
         lastScrollStep = now;
         if (offset < offsetlenght) {
             offset++;
-        } else if (offset == 0) {
-            offsetstarttimer = now; // pause before the title starts scrolling again
         } else {
-            offset = -128;
+            offset = 0;
+            offsetstarttimer = now;
         }
     }
     
@@ -184,6 +183,7 @@ void changeoffset(bool songtitlechange = false, String title = "") {
 
 void drawPlayback(String title, String author, String nextIn, float songProgress, float songLenght, int playstate) {
     display.clearDisplay();
+
     readyForTitle();
     display.print(title);
     readyForAuthor();
@@ -193,13 +193,15 @@ void drawPlayback(String title, String author, String nextIn, float songProgress
     display.print("Next up:");
     display.setCursor(43, 35);
     display.print(nextIn);
-    // display.startscrolldiagright(6, 121);
+
+    display.fillRect(114, 19, 50, 60, BLACK);
+
     display.fillCircle(62, 48, 8, 1);
-    if (playstate == 1) {
+    if (playstate == 0) {
         display.fillRect(58, 44, 3, 9, BLACK);
         display.fillRect(64, 44, 3, 9, BLACK);
     } else {
-        display.fillTriangle(110, 18, 110, 28, 120, 23, BLACK);
+        display.fillTriangle(61, 44, 61, 52, 65, 48, BLACK);
     }
 
     //Progress Bar
