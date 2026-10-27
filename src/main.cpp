@@ -4,6 +4,13 @@
 #include <Adafruit_SSD1306.h>
 #include <SpotifyEsp32.h>
 #include <Preferences.h>
+#include <WiFi.h>
+#include <WebServer.h>
+#include <DNSServer.h>
+#include <qrcodeoled.h>
+#include <SSD1306.h>
+
+#include "data/index.html"
 
 //Fonts
 #include "FreeSansBold9pt7b.h"
@@ -51,6 +58,8 @@ int offsetlenght;
 int lastScrollStep = 0;
 void drawPlayback(String title, String author, String NextIn, float songProgress, float songLenght, int playstate);
 void changeoffset(bool songtitlechange, String title);
+
+int sysVolume = 50;
 
 void setup() {
     Serial.begin(115200);
@@ -106,6 +115,25 @@ void connect_to_wifi() {
         Serial.print(".");
     }
     Serial.println("\nConnected to WiFi!");
+}
+
+char* randPW() {
+    char pw[9];
+    const char c[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%&*+-_";
+    for(int i=0;i<8;i++)pw[i]=c[esp_random()%(sizeof(c)-1)];
+    pw[8]=0;
+    return pw;
+}
+
+void wifi_qr_gen(String name, Sting wifi_psw) {
+sad 
+}
+
+void setup_wifi() {
+    const char* AP_SSID = "ESP32-Setup";
+    char* AP_PASSWORD = randPW();
+    
+
 }
 
 void save_sp_refresh_token() {
@@ -197,7 +225,7 @@ void drawPlayback(String title, String author, String nextIn, float songProgress
     display.fillRect(114, 19, 50, 60, BLACK);
 
     display.fillCircle(62, 48, 8, 1);
-    if (playstate == 0) {
+    if (playstate == 1) {
         display.fillRect(58, 44, 3, 9, BLACK);
         display.fillRect(64, 44, 3, 9, BLACK);
     } else {
@@ -217,4 +245,14 @@ void drawPlayback(String title, String author, String nextIn, float songProgress
     display.setCursor(118 - songLenghtLenght, 57);
     display.print(songLenght);
     display.display();
+}
+
+void changeVolume(int vChange) {
+
+}
+
+void drawVolumeBar(int posState, int volume) {
+    display.drawRoundRect(13, 118, 5, 38, 5, WHITE);
+
+
 }
